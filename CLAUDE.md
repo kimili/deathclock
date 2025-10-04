@@ -23,20 +23,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Use 2 spaces for indentation
 - Run swift format -i <path> to format the code in place
 
-## Development Commands
-
-### Building and Running
-
-- **Build the project**: Open `Death Clock.xcodeproj` in Xcode and use Cmd+B to build
-- **Run the app**: Use Cmd+R in Xcode to build and run
-- **Run tests**: Use Cmd+U in Xcode to run the test suite
-
-### Testing
-
-- **Unit tests**: Located in `Death ClockTests/` directory using the Swift Testing framework
-- **UI tests**: Located in `Death ClockUITests/` directory for end-to-end testing
-- **Run specific test**: Use Xcode's test navigator or command line with `xcodebuild test`
-
 ## Architecture
 
 ### Core Components
@@ -44,6 +30,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Death_ClockApp.swift**: Main app entry point with SwiftData model container setup
 - **ContentView.swift**: Primary UI view implementing a NavigationSplitView with list/detail pattern
 - **Item.swift**: SwiftData model representing timestamped items
+- **MenuBarController.swift**: Controls the menu bar integration and status item
+- **LifeVisualizationView.swift**: Renders the visual representation of weeks/months/years lived and remaining
+- **EditableSettingsView.swift**: Settings interface for user configuration (date of birth, life expectancy)
+- **AboutView.swift**: About screen with app information
 
 ## Project Configuration
 
@@ -75,9 +65,13 @@ Death Clock/
 ├── Death Clock.xcodeproj/     # Xcode project configuration
 ├── Death Clock/               # Main app source files
 │   ├── Assets.xcassets/       # App icons and assets
+│   ├── AboutView.swift        # About screen
 │   ├── ContentView.swift      # Main UI view
 │   ├── Death_ClockApp.swift   # App entry point
+│   ├── EditableSettingsView.swift  # Settings configuration UI
 │   ├── Item.swift            # Data model
+│   ├── LifeVisualizationView.swift # Life visualization renderer
+│   ├── MenuBarController.swift     # Menu bar integration
 │   └── Death_Clock.entitlements # App capabilities
 ├── Death ClockTests/          # Unit tests
 └── Death ClockUITests/        # UI tests

@@ -58,15 +58,28 @@ struct ContentView: View {
       Text("Welcome to Death Clock")
         .font(.headline)
       
-      Text("Set up your birth date and life expectancy to visualize your weeks.")
+      Text("Death Clock is a memento mori. It shows you how much of your life has already passed, as well as what remains.")
         .font(.body)
-        .foregroundStyle(.secondary)
+        .foregroundStyle(.primary)
         .multilineTextAlignment(.center)
       
-      Button("Get Started") {
+    
+      Text("What will you do with that time?")
+        .font(.body)
+        .foregroundStyle(.primary)
+        .multilineTextAlignment(.center)
+        
+      Text("To get started, enter your birth dated and how old you think you might be when you expire.")
+        .font(.body)
+        .foregroundStyle(.primary)
+        .multilineTextAlignment(.center)
+    
+      Button("Let‘s Go") {
         showingSettings = true
       }
       .buttonStyle(.borderedProminent)
+      .controlSize(.large)
+      
     }
     .padding(24)
   }

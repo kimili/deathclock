@@ -18,7 +18,7 @@ struct EditableSettingsView: View {
         .font(.headline)
       
       VStack(alignment: .leading, spacing: 8) {
-        Text("Date of Birth")
+        Text("When were you born?")
           .font(.subheadline.weight(.medium))
         
         DatePicker(
@@ -37,7 +37,7 @@ struct EditableSettingsView: View {
       }
       
       VStack(alignment: .leading, spacing: 8) {
-        Text("Life Expectancy")
+        Text("How long do you think you might live?")
           .font(.subheadline.weight(.medium))
         
         HStack(spacing: 12) {

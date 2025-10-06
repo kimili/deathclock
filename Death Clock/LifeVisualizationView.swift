@@ -35,6 +35,7 @@ struct LifeVisualizationView: View {
     let id: Int
     let weekNumber: Int
     let isPast: Bool
+    let isLast: Bool
   }
   
   var body: some View {
@@ -177,7 +178,7 @@ struct LifeVisualizationView: View {
         HStack(spacing: blockSpacing) {
           ForEach(row.blocks) { block in
             Rectangle()
-              .fill(block.isPast ? Color.gray.opacity(0.3) : Color.green)
+              .fill(block.isLast ? Color.red : (block.isPast ? Color.gray.opacity(0.3) : Color.green))
               .frame(width: blockSize, height: blockSize)
               .onHover { isHovering in
                 if isHovering {
@@ -210,6 +211,7 @@ struct LifeVisualizationView: View {
     let totalWeeks = userSettings.totalLifeExpectancyInWeeks
     let weeksLived = userSettings.weeksLived
     let totalRows = (totalWeeks + blocksPerRow - 1) / blocksPerRow
+    let lastWeekNumber = totalWeeks - 1
 
     // Pre-compute all block data off the main thread
     let rows = await Task.detached {
@@ -225,13 +227,14 @@ struct LifeVisualizationView: View {
 
           // Only add blocks that are within the total weeks
           if weekNumber < totalWeeks {
-          blocks.append(WeekBlock(
-            id: col,
-            weekNumber: weekNumber,
-            isPast: weekNumber < weeksLived
-          ))
+            blocks.append(WeekBlock(
+              id: col,
+              weekNumber: weekNumber,
+              isPast: weekNumber < weeksLived,
+              isLast: weekNumber == lastWeekNumber
+            ))
+          }
         }
-      }
 
         if !blocks.isEmpty {
           tempRows.append(BlockRow(id: displayRow, blocks: blocks))

@@ -209,42 +209,33 @@ struct LifeVisualizationView: View {
   private func prepareBlockData() async {
     let totalWeeks = userSettings.totalLifeExpectancyInWeeks
     let weeksLived = userSettings.weeksLived
-    let completeRows = totalWeeks / blocksPerRow
-    let remainderWeeks = totalWeeks % blocksPerRow
-    let hasIncompleteRow = remainderWeeks > 0
+    let totalRows = (totalWeeks + blocksPerRow - 1) / blocksPerRow
 
     // Pre-compute all block data off the main thread
     let rows = await Task.detached {
       var tempRows: [BlockRow] = []
 
-      // Complete rows (reversed)
-      for displayRow in 0..<completeRows {
-        let actualRow = completeRows - 1 - displayRow + (hasIncompleteRow ? 1 : 0)
+      for displayRow in 0..<totalRows {
+        // Reverse the row order so future weeks are at top
+        let actualRow = totalRows - 1 - displayRow
         var blocks: [WeekBlock] = []
 
         for col in 0..<blocksPerRow {
           let weekNumber = actualRow * blocksPerRow + col
+
+          // Only add blocks that are within the total weeks
+          if weekNumber < totalWeeks {
           blocks.append(WeekBlock(
             id: col,
             weekNumber: weekNumber,
             isPast: weekNumber < weeksLived
           ))
         }
-
-        tempRows.append(BlockRow(id: displayRow, blocks: blocks))
       }
 
-      // Incomplete row (first weeks of life)
-      if hasIncompleteRow {
-        var blocks: [WeekBlock] = []
-        for col in 0..<remainderWeeks {
-          blocks.append(WeekBlock(
-            id: col,
-            weekNumber: col,
-            isPast: col < weeksLived
-          ))
+        if !blocks.isEmpty {
+          tempRows.append(BlockRow(id: displayRow, blocks: blocks))
         }
-        tempRows.append(BlockRow(id: completeRows, blocks: blocks))
       }
 
       return tempRows

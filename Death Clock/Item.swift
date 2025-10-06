@@ -37,12 +37,25 @@ final class UserSettings {
     if let cached = _cachedTotalLifeExpectancy {
       return cached
     }
-    
-    let totalYears = lifeExpectancyYears
-    let totalMonths = lifeExpectancyMonths
-    let totalWeeks = lifeExpectancyWeeks
-    
-    let result = (totalYears * 52) + Int(Double(totalMonths) * 4.33) + totalWeeks
+
+    let calendar = Calendar.current
+
+    // Calculate the expected end-of-life date using actual calendar math
+    var endDate = birthDate
+    if let dateAfterYears = calendar.date(byAdding: .year, value: lifeExpectancyYears, to: endDate) {
+      endDate = dateAfterYears
+    }
+    if let dateAfterMonths = calendar.date(byAdding: .month, value: lifeExpectancyMonths, to: endDate) {
+      endDate = dateAfterMonths
+    }
+    if let dateAfterWeeks = calendar.date(byAdding: .weekOfYear, value: lifeExpectancyWeeks, to: endDate) {
+      endDate = dateAfterWeeks
+    }
+
+    // Calculate total weeks from birth to expected end date using calendar math
+    let components = calendar.dateComponents([.weekOfYear], from: birthDate, to: endDate)
+    let result = max(0, components.weekOfYear ?? 0)
+
     _cachedTotalLifeExpectancy = result
     return result
   }

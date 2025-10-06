@@ -17,13 +17,25 @@ struct LifeVisualizationView: View {
   
   @State private var hoveredWeek: Int? = nil
   @State private var tooltipPosition: CGPoint = .zero
-  
+  @State private var blockData: [BlockRow] = []
+
   // Reuse date formatter to avoid creating new instances
   private let dateFormatter: DateFormatter = {
     let formatter = DateFormatter()
     formatter.dateFormat = "MMM d, yyyy"
     return formatter
   }()
+
+  struct BlockRow: Identifiable {
+    let id: Int
+    let blocks: [WeekBlock]
+  }
+
+  struct WeekBlock: Identifiable {
+    let id: Int
+    let weekNumber: Int
+    let isPast: Bool
+  }
   
   var body: some View {
     if userSettings.weeksLived >= userSettings.totalLifeExpectancyInWeeks {
@@ -160,59 +172,87 @@ struct LifeVisualizationView: View {
   }
   
   private var weekBlocksView: some View {
-    let totalWeeks = userSettings.totalLifeExpectancyInWeeks
-    let completeRows = totalWeeks / blocksPerRow
-    let remainderWeeks = totalWeeks % blocksPerRow
-    let hasIncompleteRow = remainderWeeks > 0
-    let weeksLived = userSettings.weeksLived // Cache this value
-    
-    return VStack(alignment: .leading, spacing: blockSpacing) {
-      // First: Render complete rows from highest to lowest week numbers (future weeks at top)
-      ForEach(0..<completeRows, id: \.self) { displayRow in
-        // Map displayRow to actual row number (reverse order for complete rows)
-        let actualRow = completeRows - 1 - displayRow + (hasIncompleteRow ? 1 : 0)
-        
+    VStack(alignment: .leading, spacing: blockSpacing) {
+      ForEach(blockData) { row in
         HStack(spacing: blockSpacing) {
-          ForEach(0..<blocksPerRow, id: \.self) { col in
-            let weekNumber = actualRow * blocksPerRow + col
-            
+          ForEach(row.blocks) { block in
             Rectangle()
-              .fill(weekNumber < weeksLived ? Color.gray.opacity(0.3) : Color.green)
+              .fill(block.isPast ? Color.gray.opacity(0.3) : Color.green)
               .frame(width: blockSize, height: blockSize)
               .onHover { isHovering in
                 if isHovering {
-                  hoveredWeek = weekNumber
-                  tooltipPosition = calculateTooltipPosition(for: weekNumber, displayRow: displayRow, col: col)
-                } else if hoveredWeek == weekNumber {
+                  hoveredWeek = block.weekNumber
+                  tooltipPosition = calculateTooltipPosition(for: block.weekNumber, displayRow: row.id, col: block.id)
+                } else if hoveredWeek == block.weekNumber {
                   hoveredWeek = nil
                 }
               }
           }
         }
       }
-      
-      // Second: If there's an incomplete row, render it at the bottom (first weeks of life)
-      if hasIncompleteRow {
-        HStack(spacing: blockSpacing) {
-          ForEach(0..<blocksPerRow, id: \.self) { col in
-            if col < remainderWeeks {
-              let weekNumber = col
-              
-              Rectangle()
-                .fill(weekNumber < weeksLived ? Color.gray.opacity(0.3) : Color.green)
-                .frame(width: blockSize, height: blockSize)
-                .onHover { isHovering in
-                  if isHovering {
-                    hoveredWeek = weekNumber
-                    tooltipPosition = calculateTooltipPosition(for: weekNumber, displayRow: completeRows, col: col)
-                  } else if hoveredWeek == weekNumber {
-                    hoveredWeek = nil
-                  }
-                }
-            }
-          }
-        }
+    }
+    .task {
+      await prepareBlockData()
+    }
+    .onChange(of: userSettings.totalLifeExpectancyInWeeks) { _, _ in
+      Task {
+        await prepareBlockData()
       }
+    }
+    .onChange(of: userSettings.weeksLived) { _, _ in
+      Task {
+        await prepareBlockData()
+      }
+    }
+  }
+
+  private func prepareBlockData() async {
+    let totalWeeks = userSettings.totalLifeExpectancyInWeeks
+    let weeksLived = userSettings.weeksLived
+    let completeRows = totalWeeks / blocksPerRow
+    let remainderWeeks = totalWeeks % blocksPerRow
+    let hasIncompleteRow = remainderWeeks > 0
+
+    // Pre-compute all block data off the main thread
+    let rows = await Task.detached {
+      var tempRows: [BlockRow] = []
+
+      // Complete rows (reversed)
+      for displayRow in 0..<completeRows {
+        let actualRow = completeRows - 1 - displayRow + (hasIncompleteRow ? 1 : 0)
+        var blocks: [WeekBlock] = []
+
+        for col in 0..<blocksPerRow {
+          let weekNumber = actualRow * blocksPerRow + col
+          blocks.append(WeekBlock(
+            id: col,
+            weekNumber: weekNumber,
+            isPast: weekNumber < weeksLived
+          ))
+        }
+
+        tempRows.append(BlockRow(id: displayRow, blocks: blocks))
+      }
+
+      // Incomplete row (first weeks of life)
+      if hasIncompleteRow {
+        var blocks: [WeekBlock] = []
+        for col in 0..<remainderWeeks {
+          blocks.append(WeekBlock(
+            id: col,
+            weekNumber: col,
+            isPast: col < weeksLived
+          ))
+        }
+        tempRows.append(BlockRow(id: completeRows, blocks: blocks))
+      }
+
+      return tempRows
+    }.value
+
+    // Update on main thread
+    await MainActor.run {
+      blockData = rows
     }
   }
   

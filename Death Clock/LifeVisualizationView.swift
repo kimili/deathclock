@@ -41,51 +41,55 @@ struct LifeVisualizationView: View {
   var body: some View {
     if userSettings.weeksLived >= userSettings.totalLifeExpectancyInWeeks {
       // Easter egg for users who have outlived their life expectancy
-      easterEggView
+      wowYouAreStillHereView
     } else {
       // Normal view
-      VStack(alignment: .leading, spacing: 16) {
-        HStack {
-          Text("Death Clock 💀")
-            .font(.headline)
-            .foregroundStyle(.primary)
-          
-          Spacer()
-          
-          Button(action: {
-            showingSettings = true
-          }) {
-            Image(systemName: "gearshape")
-              .foregroundStyle(.secondary)
-              .font(.system(size: 16))
-          }
-          .buttonStyle(.plain)
-          .help("Settings")
+      visualizeYourLifeView
+    }
+  }
+  
+  private var visualizeYourLifeView: some View {
+    VStack(alignment: .leading, spacing: 16) {
+      HStack {
+        Text("Death Clock 💀")
+          .font(.headline)
+          .foregroundStyle(.primary)
+        
+        Spacer()
+        
+        Button(action: {
+          showingSettings = true
+        }) {
+          Image(systemName: "gearshape")
+            .foregroundStyle(.secondary)
+            .font(.system(size: 16))
         }
-        
-        statisticsView
-        
-        percentageView
-        
-        weekBlocksView
-          .frame(maxWidth: .infinity, alignment: .leading)
+        .buttonStyle(.plain)
+        .help("Settings")
       }
-      .coordinateSpace(name: "mainView")
-      .padding()
-      .background(Color(NSColor.controlBackgroundColor))
-      .clipShape(RoundedRectangle(cornerRadius: 8))
-      .overlay(alignment: .topLeading) {
-        if let hoveredWeek = hoveredWeek {
-          tooltipView(for: hoveredWeek)
-            .offset(x: tooltipPosition.x, y: tooltipPosition.y)
-            .zIndex(1000)
-            .allowsHitTesting(false)
-        }
+      
+      statisticsView
+      
+      percentageView
+      
+      weekBlocksView
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    .coordinateSpace(name: "mainView")
+    .padding()
+    .background(Color(NSColor.controlBackgroundColor))
+    .clipShape(RoundedRectangle(cornerRadius: 8))
+    .overlay(alignment: .topLeading) {
+      if let hoveredWeek = hoveredWeek {
+        tooltipView(for: hoveredWeek)
+          .offset(x: tooltipPosition.x, y: tooltipPosition.y)
+          .zIndex(1000)
+          .allowsHitTesting(false)
       }
     }
   }
   
-  private var easterEggView: some View {
+  private var wowYouAreStillHereView: some View {
     VStack(alignment: .center, spacing: 16) {
       HStack {
         Text("Death Clock")
@@ -112,7 +116,7 @@ struct LifeVisualizationView: View {
           .font(.system(size: 80))
         
         VStack(spacing: 12) {
-          Text("You’ve beat the odds!")
+          Text("You’ve beaten the odds!")
             .font(.title.bold())
             .foregroundStyle(.primary)
           

@@ -14,8 +14,9 @@ struct AboutView: View {
         .frame(height: 16)
       
       HStack {
-        Image(systemName: "hourglass")
-          .font(.system(size: 48))
+        Image("hourglass")
+          .resizable()
+          .frame(width: 42, height: 48)
           .foregroundStyle(.secondary)
         
         VStack(alignment: .leading, spacing: 4) {

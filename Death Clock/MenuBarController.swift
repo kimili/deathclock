@@ -38,7 +38,10 @@ class MenuBarController: NSObject, ObservableObject {
     statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
     
     if let button = statusItem?.button {
-      button.image = NSImage(systemSymbolName: "hourglass", accessibilityDescription: "Death Clock")
+      let image = NSImage(named: "hourglass-icon")
+      image?.accessibilityDescription = "Death Clock"
+      image?.isTemplate = true
+      button.image = image
       button.action = #selector(statusItemClicked(_:))
       button.target = self
       button.sendAction(on: [.leftMouseUp, .rightMouseUp])
